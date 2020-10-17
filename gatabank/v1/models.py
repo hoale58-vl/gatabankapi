@@ -17,6 +17,7 @@ class AbstractEntity(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['-updated_at']
 
     def save(self, *args, **kwargs):
         if not self.id:
