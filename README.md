@@ -42,6 +42,17 @@ docker run -it \
     -e DB_NAME=gatabank \
     -e DB_USER=gatabank \
     -e DB_PASSWORD=Admin123 \
+    django \
+    python manage.py createsuperuser
+
+docker run -it \
+    --rm \
+    --name gatabank-api \
+    --network gatabank \
+    --mount type=bind,source="$(pwd)"/gatabank,target=/app \
+    -e DB_NAME=gatabank \
+    -e DB_USER=gatabank \
+    -e DB_PASSWORD=Admin123 \
     -p 8080:8080 \
     django \
     python manage.py runserver 0.0.0.0:8080

@@ -13,10 +13,6 @@ class ChoiceEnum(Enum):
         return choices
 
 class Status(ChoiceEnum):
-    PENDING = 'PENDING'
     ACTIVE = 'ACTIVE'
     INACTIVE = 'INACTIVE'
     DELETED = 'DELETED'
-    REJECTED = 'REJECTED'
-    EXPIRED = 'EXPIRED'
-    CANCELED = 'CANCELED'

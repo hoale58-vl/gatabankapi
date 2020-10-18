@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from v1.models import (
     Bank, BankDiscount, BankFee, BankRequirement,
-    Card, CardBasic, CardBenefit, CardDiscount, CardFee, CardRequirement
+    Card, CardBasic, CardBenefit, CardDiscount, CardFee, CardRequirement,
+    City, District, Village
 )
 
 class AbstractSerializer(serializers.HyperlinkedModelSerializer):
@@ -11,6 +12,24 @@ class AbstractSerializer(serializers.HyperlinkedModelSerializer):
             return expanded_fields + self.Meta.extra_fields
         else:
             return expanded_fields
+
+## CITY
+class CitySerializer(AbstractSerializer):
+    class Meta:
+        model = City
+        fields = '__all__'
+
+## DISTRICT
+class DistrictSerializer(AbstractSerializer):
+    class Meta:
+        model = District
+        fields = '__all__'
+
+## VILLAGE
+class VillageSerializer(AbstractSerializer):
+    class Meta:
+        model = Village
+        fields = '__all__'
 
 ## BANK
 class BankFeeSerializer(AbstractSerializer):
@@ -39,7 +58,6 @@ class BankSerializer(AbstractSerializer):
         extra_fields = ['bankFees', 'bankRequirements', 'bankDiscounts']
 
 ## CARD
-
 class CardBasicSerializer(AbstractSerializer):
     class Meta:
         model = CardBasic

@@ -6,7 +6,11 @@ from .enum import Status
 from django.utils import timezone
 from rest_framework import exceptions
 from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth.models import BaseUserManager
+from django.contrib.auth.models import User
+from phonenumber_field.modelfields import PhoneNumberField
+from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.utils.html import mark_safe
 
 class AbstractEntity(models.Model):
     id = models.CharField(max_length=255, primary_key=True, default=uuid.uuid4, editable=False)
@@ -40,7 +44,6 @@ class AbstractEntity(models.Model):
     def get_active_object_by_id(cls, pk):
         return cls.objects.filter(pk=pk, status=Status.ACTIVE.name).first()
 
-
 class City(AbstractEntity, models.Model):
     name = models.CharField(max_length=300, blank=True, null=False)
     type = models.CharField(max_length=300, blank=True, null=False)
@@ -64,56 +67,38 @@ class Village(AbstractEntity, models.Model):
     class Meta:
         db_table = 'villages'
 
-class User(AbstractEntity, models.Model):
-    phone_number = models.CharField(max_length=300, blank=True, null=False)
-    password = models.CharField(max_length=300, blank=True, null=True)
-    name = models.CharField(max_length=300, blank=True, null=True)
 
+class UserManager(BaseUserManager):
+    use_in_migrations = True
+    def _create_user(self, phone_number, password, **extra_fields):
+        user = self.model(phone_number=phone_number, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    def create_user(self, phone_number, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(phone_number, password, **extra_fields)
+
+    def create_superuser(self, phone_number, password, **extra_fields):
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_staff', True)
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+        return self._create_user(phone_number, password, **extra_fields)
+
+class User(AbstractEntity, AbstractBaseUser, PermissionsMixin):
+    phone_number = PhoneNumberField(null=False, unique=True)
     district = models.ForeignKey('v1.District', null=True, default=None, on_delete=models.CASCADE, db_column='district_id')
     city = models.ForeignKey('v1.City', null=True, default=None, on_delete=models.CASCADE, db_column='city_id')
     village = models.ForeignKey('v1.Village', null=True, default=None, on_delete=models.CASCADE, db_column='village_id')
     address = models.CharField(max_length=500, blank=True, null=True)
-
     date_of_birth = models.DateField('date_of_birth', null=True)
-    last_login = models.DateTimeField('last_login', default=timezone.now)
+    last_login = models.DateTimeField('last_login', null=True)
     is_staff = models.BooleanField(null=False, default=False)
-    is_superuser = models.BooleanField(null=False, default=False)
 
-    def has_perm(self, perm, obj=None):
-        return self.is_superuser
-
-    def has_module_perms(self, app_label):
-        return self.is_superuser
-
-
-    username = ""
-    objects = BaseUserManager()
-
-    USERNAME_FIELD = 'phone'
-    REQUIRED_FIELDS = ['phone', 'name']
-
-    def get_by_natural_key(self):
-        return self.phone
-
-    def set_password(self, password):
-        self.password = make_password(password)
-
-    def check_password(self, raw_password):
-        if not self.password:
-            raise exceptions.AuthenticationFailed(
-                _('You have not set a password. Please check your email first or click Forgot Password to set your password'),
-                'password_empty',
-            )
-        return check_password(raw_password, self.password)
-
-    @classmethod
-    def get_by_phone_number(cls, phone_number):
-        try:
-            record = cls.objects.filter(phone_number=phone_number.lower(), status=Status.ACTIVE.name)
-            return record.first()
-        except Exception as e:
-            print(e)
-            return None
+    USERNAME_FIELD = 'phone_number'
+    objects = UserManager()
 
     class Meta:
         db_table = 'users'
@@ -148,7 +133,7 @@ class BankDiscount(AbstractEntity, models.Model):
 
 class Bank(AbstractEntity, models.Model):
     name = models.CharField(max_length=512, blank=True, null=True)
-    image = models.CharField(max_length=512, blank=True, null=True)
+    image = models.ImageField(upload_to='media/image/banks', blank=True, null=True)
     minLoanAmount = models.IntegerField(blank=True, null=True)
     maxLoanAmount = models.IntegerField(blank=True, null=True)
     interestPercentage = models.IntegerField(blank=True, null=True)
@@ -161,6 +146,14 @@ class Bank(AbstractEntity, models.Model):
 
     class Meta:
         db_table = 'banks'
+    
+    def image_tag(self):
+        return mark_safe('<img src="/%s" width="150" height="100" />' % (self.image))
+
+    image_tag.short_description = 'Image'
+
+    def __str__(self):
+        return self.name
 
 class CardDiscount(AbstractEntity, models.Model):
     card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id')
@@ -217,6 +210,14 @@ class Card(AbstractEntity, models.Model):
     sponsor = models.CharField(max_length=512, blank=True, null=True)
     subtitle = models.CharField(max_length=512, blank=True, null=True)
     rating = models.FloatField(null=True)
+    image = models.ImageField(upload_to='media/image/cards', blank=True, null=True)
+    def __str__(self):
+        return self.name
+
+    def image_tag(self):
+        return mark_safe('<img src="/%s" width="150" height="100" />' % (self.image))
+
+    image_tag.short_description = 'Image'
 
     class Meta:
         db_table = 'cards'
