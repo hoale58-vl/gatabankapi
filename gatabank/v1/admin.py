@@ -5,7 +5,7 @@ from .models import (
     Card, CardBasic, CardBenefit, CardDiscount, CardFee, CardRequirement,
     User
 )
-from django import forms
+from django.forms import ModelForm, PasswordInput
 
 class AbstractModelAdmin():
     exclude = ('status','created_at', 'updated_at',)
@@ -44,6 +44,14 @@ class CardFeeInline(AbstractModelAdmin, admin.TabularInline):
 class CardRequirementInline(AbstractModelAdmin, admin.TabularInline):
     model = CardRequirement
 
+class UserForm(ModelForm):
+    class Meta:
+        model = User
+        fields = '__all__'
+        widgets = {
+            'password': PasswordInput(render_value=True),
+        }
+
 @admin.register(Card)
 class CardAdmin(AbstractModelAdmin, admin.ModelAdmin):
     list_display = ['name', 'image_tag',]
@@ -54,6 +62,7 @@ class CardAdmin(AbstractModelAdmin, admin.ModelAdmin):
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     exclude = ('is_staff', 'is_superuser')
+    form = UserForm
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(is_staff=True)
@@ -77,6 +86,7 @@ class Collaborator(User):
 @admin.register(Collaborator)
 class CollaboratorAdmin(admin.ModelAdmin):
     exclude = ('is_staff', 'is_superuser')
+    form = UserForm
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(is_staff=False)

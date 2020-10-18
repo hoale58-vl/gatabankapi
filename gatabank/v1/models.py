@@ -100,11 +100,14 @@ class User(AbstractEntity, AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'phone_number'
     objects = UserManager()
 
+    def __str__(self):
+        return str(self.phone_number)
+
     class Meta:
         db_table = 'users'
 
 class BankRequirement(AbstractEntity, models.Model):
-    bank = models.ForeignKey('v1.Bank', null=True, default=None, on_delete=models.CASCADE, db_column='bank_id')
+    bank = models.ForeignKey('v1.Bank', null=True, default=None, on_delete=models.CASCADE, db_column='bank_id', related_name = 'bank_requirement_set')
     age = models.CharField(max_length=512, blank=True, null=True)
     personalIdentifier = models.CharField(max_length=512, blank=True, null=True)
     incomeIdentifier = models.CharField(max_length=512, blank=True, null=True)
@@ -115,7 +118,7 @@ class BankRequirement(AbstractEntity, models.Model):
         db_table = 'bank_requirements'
 
 class BankFee(AbstractEntity, models.Model):
-    bank = models.ForeignKey('v1.Bank', null=True, default=None, on_delete=models.CASCADE, db_column='bank_id')
+    bank = models.ForeignKey('v1.Bank', null=True, default=None, on_delete=models.CASCADE, db_column='bank_id', related_name = 'bank_fee_set')
     penaltyFee = models.CharField(max_length=512, blank=True, null=True)
     penaltyInterest = models.CharField(max_length=512, blank=True, null=True)
     earlierPaymentFee = models.CharField(max_length=512, blank=True, null=True)
@@ -124,7 +127,7 @@ class BankFee(AbstractEntity, models.Model):
         db_table = 'bank_fees'
 
 class BankDiscount(AbstractEntity, models.Model):
-    bank = models.ForeignKey('v1.Bank', null=True, default=None, on_delete=models.CASCADE, db_column='bank_id')
+    bank = models.ForeignKey('v1.Bank', null=True, default=None, on_delete=models.CASCADE, db_column='bank_id', related_name = 'bank_discount_set')
     label = models.CharField(max_length=512, blank=True, null=True)
     description = models.CharField(max_length=512, blank=True, null=True)
 
@@ -156,7 +159,7 @@ class Bank(AbstractEntity, models.Model):
         return self.name
 
 class CardDiscount(AbstractEntity, models.Model):
-    card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id')
+    card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id', related_name = 'card_discount_set')
     label = models.CharField(max_length=512, blank=True, null=True)
     description = models.CharField(max_length=512, blank=True, null=True)
 
@@ -164,7 +167,7 @@ class CardDiscount(AbstractEntity, models.Model):
         db_table = 'card_discounts'
 
 class CardBenefit(AbstractEntity, models.Model):
-    card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id')
+    card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id', related_name = 'card_benefit_set')
     label = models.CharField(max_length=512, blank=True, null=True)
     description = models.CharField(max_length=512, blank=True, null=True)
 
@@ -172,7 +175,7 @@ class CardBenefit(AbstractEntity, models.Model):
         db_table = 'card_benefits'
 
 class CardRequirement(AbstractEntity, models.Model):
-    card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id')
+    card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id', related_name = 'card_requirement_set')
     age = models.IntegerField(null=True)
     personalIdentifier = models.CharField(max_length=512, blank=True, null=True)
     incomeRequirement = models.IntegerField(null=True)
@@ -182,7 +185,7 @@ class CardRequirement(AbstractEntity, models.Model):
         db_table = 'card_requirements'
 
 class CardFee(AbstractEntity, models.Model):
-    card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id')
+    card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id', related_name = 'card_fee_set')
     cashAdvance = models.CharField(max_length=512, blank=True, null=True)
     latePayment = models.CharField(max_length=512, blank=True, null=True)
     foreignTransaction = models.CharField(max_length=512, blank=True, null=True)
@@ -191,7 +194,7 @@ class CardFee(AbstractEntity, models.Model):
         db_table = 'card_fees'
 
 class CardBasic(AbstractEntity, models.Model):
-    card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id')
+    card = models.ForeignKey('v1.Card', null=True, default=None, on_delete=models.CASCADE, db_column='card_id', related_name = 'card_basic_set')
     freeAirportLounge = models.IntegerField(null=True)
     yearlyFee = models.IntegerField(null=True)
     averageRefund = models.IntegerField(null=True)

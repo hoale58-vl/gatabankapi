@@ -1,7 +1,8 @@
 from django.urls import path, include
 from v1.views import (
     BankViewSet, CardViewSet,
-    CityViewList, DistrictViewList, VillageViewList
+    CityViewList, DistrictViewList, VillageViewList,
+    UserViewSet, CollaboratorViewSet
 )
 
 from rest_framework import routers
@@ -9,6 +10,8 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 router.register(r'banks', BankViewSet)
 router.register(r'cards', CardViewSet)
+router.register(r'users', UserViewSet)
+router.register(r'collaborators', CollaboratorViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

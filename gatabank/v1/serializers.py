@@ -2,16 +2,23 @@ from rest_framework import serializers
 from v1.models import (
     Bank, BankDiscount, BankFee, BankRequirement,
     Card, CardBasic, CardBenefit, CardDiscount, CardFee, CardRequirement,
-    City, District, Village
+    City, District, Village,
+    User
 )
 
-class AbstractSerializer(serializers.HyperlinkedModelSerializer):
+class AbstractSerializer(serializers.ModelSerializer):
     def get_field_names(self, declared_fields, info):
         expanded_fields = super(AbstractSerializer, self).get_field_names(declared_fields, info)
         if getattr(self.Meta, 'extra_fields', None):
             return expanded_fields + self.Meta.extra_fields
         else:
             return expanded_fields
+
+## USER
+class UserSerializer(AbstractSerializer):
+    class Meta:
+        model = User
+        exclude = ['is_staff', 'is_superuser']
 
 ## CITY
 class CitySerializer(AbstractSerializer):
@@ -35,17 +42,17 @@ class VillageSerializer(AbstractSerializer):
 class BankFeeSerializer(AbstractSerializer):
     class Meta:
         model = BankFee
-        fields = '__all__'
+        exclude = ['created_at','updated_at', 'id', 'bank']
 
 class BankRequirementSerializer(AbstractSerializer):
     class Meta:
         model = BankRequirement
-        fields = '__all__'
+        exclude = ['created_at','updated_at', 'id', 'bank']
 
 class BankDiscountSerializer(AbstractSerializer):
     class Meta:
         model = BankDiscount
-        fields = '__all__'
+        exclude = ['created_at','updated_at', 'id', 'bank']
 
 class BankSerializer(AbstractSerializer):
     bankFees = BankFeeSerializer(source='card_basic_set', many=True)
@@ -61,27 +68,27 @@ class BankSerializer(AbstractSerializer):
 class CardBasicSerializer(AbstractSerializer):
     class Meta:
         model = CardBasic
-        fields = '__all__'
+        exclude = ['created_at','updated_at', 'id', 'card']
 
 class CardBenefitSerializer(AbstractSerializer):
     class Meta:
         model = CardBenefit
-        fields = '__all__'
+        exclude = ['created_at','updated_at', 'id', 'card']
 
 class CardDiscountSerializer(AbstractSerializer):
     class Meta:
         model = CardDiscount
-        fields = '__all__'
+        exclude = ['created_at','updated_at', 'id', 'card']
 
 class CardFeeSerializer(AbstractSerializer):
     class Meta:
         model = CardFee
-        fields = '__all__'
+        exclude = ['created_at','updated_at', 'id', 'card']
 
 class CardRequirementSerializer(AbstractSerializer):
     class Meta:
         model = CardRequirement
-        fields = '__all__'
+        exclude = ['created_at','updated_at', 'id', 'card']
 
 class CardSerializer(AbstractSerializer):
     cardBasics = CardBasicSerializer(source='card_basic_set', many=True)

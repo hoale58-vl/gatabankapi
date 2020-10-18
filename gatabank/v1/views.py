@@ -2,11 +2,13 @@ from rest_framework import viewsets
 from v1.models import (
     Bank, Card,
     City, District, Village,
+    User
 )
 from rest_framework.generics import ListAPIView
 from v1.serializers import (
     BankSerializer, CardSerializer, 
     CitySerializer, DistrictSerializer, VillageSerializer,
+    UserSerializer
 )
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer, AdminRenderer
 
@@ -31,3 +33,11 @@ class BankViewSet(viewsets.ModelViewSet):
 class CardViewSet(viewsets.ModelViewSet):
     queryset = Card.objects.all()
     serializer_class = CardSerializer
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.filter(is_staff=False)
+    serializer_class = UserSerializer
+
+class CollaboratorViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.filter(is_staff=True)
+    serializer_class = UserSerializer
